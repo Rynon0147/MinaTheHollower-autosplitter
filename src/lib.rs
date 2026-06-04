@@ -2,7 +2,7 @@
 #![allow(unused_imports)] //remove
 
 use asr::{
-    future::next_tick, 
+    future::{next_tick, retry}, 
     settings::Gui, 
     Process, 
     time::Duration,
@@ -30,55 +30,71 @@ use crate::offsets::get_offsets;
 
 asr::async_main!(stable);
 
+
+const PROCESS_NAMES: &[&str] = &["MinaTheHollower.exe", "MinaTheHollower"];
+
 async fn main() {
-    // TODO: Set up some general state and settings.
+
     let mut settings = splitter_settings::Settings::register();
 
-    // Base Settings
-    let plattform = "windows";
-    let process_name: &str;
-    match plattform {
-        "linux" => {
-            process_name = "MinaTheHollower";
-        }
-        "windows" => {
-            process_name = "MinaTheHollower.exe";
-        }
-        _ => {
-            print_message("invalid plattform");
-            process_name = "";
-        }
-    }
-
-    
     print_message("Setup done. Waiting for Process.");
 
     loop {
-        let process = Process::wait_attach(process_name).await;
+        let found: (&str, Process) = retry(|| PROCESS_NAMES.iter().find_map(|&name| Process::attach(name).map(|proc| (name, proc)))).await;
+        let process_name = found.0;
+        let process = found.1;//Process::wait_attach(process_name).await;  
+
+        let platform : &str;
+        match process_name {
+            "MinaTheHollower" => {
+                platform = "Linux";
+            }
+            "MinaTheHollower.exe" => {
+                platform = "Windows";
+            }
+            _ => {
+                print_message("unknown platform");
+                platform = "";
+            }
+        }
+        set_variable("Platform", platform);
+
         process
             .until_closes(async {
                 print_message("Process found.");
                 
                 // Game Timer (seconds)
                 if let Some(offset_arrays) = get_offsets(&process, process_name){
-                
-                    let mut watch_fPlayTimeCleared: Watcher<f64> = Watcher::new();
-                    watch_fPlayTimeCleared.update_infallible(0f64);
 
                     print_message("Starting Loop.");
                     loop {
                         settings.update();
-                        
-                        // TODO: Do something on every tick.
 
                         // Game Timer
                         if let Ok(time) = process.read_pointer_path::<f64>(
                             offset_arrays.savemanager,
                             Bit64,
+                            &offset_arrays.fPlayTime,
+                        ) {
+                            set_variable_float("fPlayTime", time);
+                            set_game_time(Duration::seconds_f64(time));
+                        }
+
+                        if let Ok(time) = process.read_pointer_path::<f64>(
+                            offset_arrays.savemanager,
+                            Bit64,
                             &offset_arrays.fPlayTimeCleared,
                         ) {
-                            watch_fPlayTimeCleared.update_infallible(time);
                             set_variable_float("fPlayTimeCleared", time);
+                            set_game_time(Duration::seconds_f64(time));
+                        }
+
+                        if let Ok(time) = process.read_pointer_path::<f64>(
+                            offset_arrays.savemanager,
+                            Bit64,
+                            &offset_arrays.fPlayTimeTotal,
+                        ) {
+                            set_variable_float("fPlayTimeTotal", time);
                             set_game_time(Duration::seconds_f64(time));
                         }
                         
