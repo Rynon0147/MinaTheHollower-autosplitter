@@ -29,6 +29,7 @@ pub fn get_offsets(process: &Process, process_name: &str) -> Option<Offsets> {
         fPlayTime: [0x18, 0x8],
         fPlayTimeCleared: [0x18, 0x10],
         fPlayTimeTotal: [0x18, 0x18],
+        sCheckpointGamestate: [0x1f8],
     })
 }
 
@@ -37,4 +38,5 @@ pub(crate) struct Offsets {
     pub fPlayTime: [u64; 2],
     pub fPlayTimeCleared: [u64; 2],
     pub fPlayTimeTotal: [u64; 2],
+    pub sCheckpointGamestate: [u64; 1],
 }
