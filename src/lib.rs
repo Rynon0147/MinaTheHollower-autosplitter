@@ -56,7 +56,7 @@ async fn main() {
 
         // Game Timer
         let mut watch_fPlayTime: Watcher<f64> = Watcher::new();
-        watch_fPlayTime.update_infallible(0f64);
+        watch_fPlayTime.update_infallible(-1.0f64);
 
         // state watch
         let mut watch_sCheckpointGamestate: Watcher<u32> = Watcher::new();
@@ -154,17 +154,29 @@ async fn main() {
 
                         match state() {
                             TimerState::NotRunning => {
-                                //start timer
+                                // start timer
                                 if let Some(fPlayTime) = &watch_fPlayTime.pair {
-                                    /*
-                                    if fPlayTime.changed() && fPlayTime.old == 0f64 {
-                                        reset_all(/*&mut split_states*/);
+                                    if fPlayTime.old != fPlayTime.current
+                                        && fPlayTime.old == 0f64
+                                        && fPlayTime.current > 0f64
+                                    {
+                                        start();
+                                        //reset_all();
                                     }
-                                    */
                                 }
                             }
                             TimerState::Paused => {}
                             TimerState::Running => {
+                                // reset and start timer, made to handle quitting to title and reloading the profile
+                                if let Some(fPlayTime) = &watch_fPlayTime.pair {
+                                    if fPlayTime.old == 0f64
+                                        && fPlayTime.current > 0f64
+                                        && fPlayTime.current < 1f64
+                                    {
+                                        reset_all();
+                                    }
+                                }
+
                                 // split logic
                                 if settings.queensbury_crypt
                                     && (generator & 0x02) != 0
