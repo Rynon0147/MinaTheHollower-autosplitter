@@ -183,8 +183,8 @@ async fn main() {
                                         && fPlayTime.current > 0f64
                                         && fPlayTime.current < 1f64
                                     {
+                                        reset_all(&mut splits_completed);
                                         start();
-                                        pause_game_time();
                                     }
                                 }
                             }
