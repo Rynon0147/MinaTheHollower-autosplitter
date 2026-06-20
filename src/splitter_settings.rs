@@ -20,6 +20,14 @@ pub struct Settings {
     mina_the_hollower: Title,
 
     #[heading_level = 1]
+    timer: Title,
+    /// Auto-Reset/Start (on Profile Select)
+    ///
+    /// Automatically reset and start the timer. This will happen when selecting a new profile.
+    #[default = true]
+    pub auto_reset_start: bool,
+
+    #[heading_level = 1]
     generators: Title,
     /// Queensbury Crypt
     ///
@@ -290,10 +298,305 @@ pub struct Settings {
     #[default = false]
     pub western_wilds_enter: bool,
     #[heading_level = 1]
-    timer: Title,
-    /// Auto-Reset/Start (on Profile Select)
+    trinkets: Title,
+    /// Lace Glove
     ///
-    /// Automatically reset and start the timer. This will happen when selecting a new profile.
-    #[default = true]
-    pub auto_reset_start: bool,
+    /// Split on collecting the Lace Glove trinket
+    #[default = false]
+    pub lace_glove: bool,
+    /// Twill Weave
+    ///
+    /// Split on collecting the Twill Weave trinket
+    #[default = false]
+    pub twill_weave: bool,
+    /// Smelling Salts
+    ///
+    /// Split on collecting the Smelling Salts trinket
+    #[default = false]
+    pub smelling_salts: bool,
+    /// Brisk Brew
+    ///
+    /// Split on collecting the Brisk Brew trinket
+    #[default = false]
+    pub brisk_brew: bool,
+    /// Seismic Belt
+    ///
+    /// Split on collecting the Seismic Belt trinket
+    #[default = false]
+    pub seismic_belt: bool,
+    /// Plasma Funnel
+    ///
+    /// Split on collecting the Plasma Funnel trinket
+    #[default = false]
+    pub plasma_funnel: bool,
+    /// Deboning Wand
+    ///
+    /// Split on collecting the Deboning Wand trinket
+    #[default = false]
+    pub deboning_wand: bool,
+    /// Steady Soles
+    ///
+    /// Split on collecting the Steady Soles trinket
+    #[default = false]
+    pub steady_soles: bool,
+    /// Valor Medallion
+    ///
+    /// Split on collecting the Valor Medallion trinket
+    #[default = false]
+    pub valor_medallion: bool,
+    /// Bell of Grace
+    ///
+    /// Split on collecting the Bell of Grace trinket
+    #[default = false]
+    pub bell_of_grace: bool,
+    /// Willow the Wisp
+    ///
+    /// Split on collecting the Willow the Wisp trinket
+    #[default = false]
+    pub willow_the_wisp: bool,
+    /// Helio the Wisp
+    ///
+    /// Split on collecting the Helio the Wisp trinket
+    #[default = false]
+    pub helio_the_wisp: bool,
+    /// Keri the Wisp
+    ///
+    /// Split on collecting the Keri the Wisp trinket
+    #[default = false]
+    pub keri_the_wisp: bool,
+    /// Windfall Charm
+    ///
+    /// Split on collecting the Windfall Charm trinket
+    #[default = false]
+    pub windfall_charm: bool,
+    /// Chain Capacitor
+    ///
+    /// Split on collecting the Chain Capacitor trinket
+    #[default = false]
+    pub chain_capacitor: bool,
+    /// Spike Spurs
+    ///
+    /// Split on collecting the Spike Spurs trinket
+    #[default = false]
+    pub spike_spurs: bool,
+    /// Desperation Bonnet
+    ///
+    /// Split on collecting the Desperation Bonnet trinket
+    #[default = false]
+    pub desperation_bonnet: bool,
+    /// Stolenoid
+    ///
+    /// Split on collecting the Stolenoid trinket
+    #[default = false]
+    pub stolenoid: bool,
+    /// Fly Bait
+    ///
+    /// Split on collecting the Fly Bait trinket
+    #[default = false]
+    pub fly_bait: bool,
+    /// Proto Spark
+    ///
+    /// Split on collecting the Proto Spark trinket
+    #[default = false]
+    pub proto_spark: bool,
+    /// Primed Vial Pouch
+    ///
+    /// Split on collecting the Primed Vial Pouch trinket
+    #[default = false]
+    pub primed_vial_pouch: bool,
+    /// Flame Guard
+    ///
+    /// Split on collecting the Flame Guard trinket
+    #[default = false]
+    pub flame_guard: bool,
+    /// Spark Catcher
+    ///
+    /// Split on collecting the Spark Catcher trinket
+    #[default = false]
+    pub spark_catcher: bool,
+    /// Evasion Powder
+    ///
+    /// Split on collecting the Evasion Powder trinket
+    #[default = false]
+    pub evasion_powder: bool,
+    /// Vascular Syrup
+    ///
+    /// Split on collecting the Vascular Syrup trinket
+    #[default = false]
+    pub vascular_syrup: bool,
+    /// Pit Preserver
+    ///
+    /// Split on collecting the Pit Preserver trinket
+    #[default = false]
+    pub pit_preserver: bool,
+    /// Iron Lung
+    ///
+    /// Split on collecting the Iron Lung trinket
+    #[default = false]
+    pub iron_lung: bool,
+    /// Tumbling Tutu
+    ///
+    /// Split on collecting the Tumbling Tutu trinket
+    #[default = false]
+    pub tumbling_tutu: bool,
+    /// Plasma Jug
+    ///
+    /// Split on collecting the Plasma Jug trinket
+    #[default = false]
+    pub plasma_jug: bool,
+    /// Uranium Bracelet
+    ///
+    /// Split on collecting the Uranium Bracelet trinket
+    #[default = false]
+    pub uranium_bracelet: bool,
+    /// Bubble Ring
+    ///
+    /// Split on collecting the Bubble Ring trinket
+    #[default = false]
+    pub bubble_ring: bool,
+    /// Shock Flint
+    ///
+    /// Split on collecting the Shock Flint trinket
+    #[default = false]
+    pub shock_flint: bool,
+    /// Intravenous Vial
+    ///
+    /// Split on collecting the Intravenous Vial trinket
+    #[default = false]
+    pub intravenous_vial: bool,
+    /// Pneumatic Armlet
+    ///
+    /// Split on collecting the Pneumatic Armlet trinket
+    #[default = false]
+    pub pneumatic_armlet: bool,
+    /// Starving Beastium
+    ///
+    /// Split on collecting the Starving Beastium trinket
+    #[default = false]
+    pub starving_beastium: bool,
+    /// Draining Beastium
+    ///
+    /// Split on collecting the Draining Beastium trinket
+    #[default = false]
+    pub draining_beastium: bool,
+    /// Reckless Beastium
+    ///
+    /// Split on collecting the Reckless Beastium trinket
+    #[default = false]
+    pub reckless_beastium: bool,
+    /// Volatile Beastium
+    ///
+    /// Split on collecting the Volatile Beastium trinket
+    #[default = false]
+    pub volatile_beastium: bool,
+    /// Burning Beastium
+    ///
+    /// Split on collecting the Burning Beastium trinket
+    #[default = false]
+    pub burning_beastium: bool,
+    /// Warding Beastium
+    ///
+    /// Split on collecting the Warding Beastium trinket
+    #[default = false]
+    pub warding_beastium: bool,
+    /// Dummy Cache
+    ///
+    /// Split on collecting the Dummy Cache trinket
+    #[default = false]
+    pub dummy_cache: bool,
+    /// Blinking Glass
+    ///
+    /// Split on collecting the Blinking Glass trinket
+    #[default = false]
+    pub blinking_glass: bool,
+    /// Watchful Eye
+    ///
+    /// Split on collecting the Watchful Eye trinket
+    #[default = false]
+    pub watchful_eye: bool,
+    /// Bridge Weaver
+    ///
+    /// Split on collecting the Bridge Weaver trinket
+    #[default = false]
+    pub bridge_weaver: bool,
+    /// Vial Salvo
+    ///
+    /// Split on collecting the Vial Salvo trinket
+    #[default = false]
+    pub vial_salvo: bool,
+    /// Dodging Pendulum
+    ///
+    /// Split on collecting the Dodging Pendulum trinket
+    #[default = false]
+    pub dodging_pendulum: bool,
+    /// Spring Heels
+    ///
+    /// Split on collecting the Spring Heels trinket
+    #[default = false]
+    pub spring_heels: bool,
+    /// Wallower's Gauntlets
+    ///
+    /// Split on collecting the Wallower's Gauntlets trinket
+    #[default = false]
+    pub wallowers_gauntlets: bool,
+    /// Oozing Organ
+    ///
+    /// Split on collecting the Oozing Organ trinket
+    #[default = false]
+    pub oozing_organ: bool,
+    /// Voltaic Guard
+    ///
+    /// Split on collecting the Voltaic Guard trinket
+    #[default = false]
+    pub voltaic_guard: bool,
+    /// Repulsing Root
+    ///
+    /// Split on collecting the Repulsing Root trinket
+    #[default = false]
+    pub repulsing_root: bool,
+    /// Lightning Grip
+    ///
+    /// Split on collecting the Lightning Grip trinket
+    #[default = false]
+    pub lightning_grip: bool,
+    /// Dead Leaf
+    ///
+    /// Split on collecting the Dead Leaf trinket
+    #[default = false]
+    pub dead_leaf: bool,
+    /// Niter Belt
+    ///
+    /// Split on collecting the Niter Belt trinket
+    #[default = false]
+    pub niter_belt: bool,
+    /// Bellows Bustle
+    ///
+    /// Split on collecting the Bellows Bustle trinket
+    #[default = false]
+    pub bellows_bustle: bool,
+    /// Tunneling Codex
+    ///
+    /// Split on collecting the Tunneling Codex trinket
+    #[default = false]
+    pub tunneling_codex: bool,
+    /// Joule Syringe
+    ///
+    /// Split on collecting the Joule Syringe trinket
+    #[default = false]
+    pub joule_syringe: bool,
+    /// Polyp Lamp
+    ///
+    /// Split on collecting the Polyp Lamp trinket
+    #[default = false]
+    pub polyp_lamp: bool,
+    /// Thermal Pack
+    ///
+    /// Split on collecting the Thermal Pack trinket
+    #[default = false]
+    pub thermal_pack: bool,
+    /// Counter Vial
+    ///
+    /// Split on collecting the Counter Vial trinket
+    #[default = false]
+    pub counter_vial: bool,
 }

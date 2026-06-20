@@ -26,6 +26,7 @@ struct SplitsCompleted {
     bosses_defeated: u32,
     game_cleared: bool,
     map_seen: [bool; 17],
+    trinkets_seen: [bool; 60],
 }
 
 impl SplitsCompleted {
@@ -35,6 +36,7 @@ impl SplitsCompleted {
             bosses_defeated: 0x00,
             game_cleared: false,
             map_seen: [false; 17],
+            trinkets_seen: [false; 60],
         }
     }
 
@@ -43,6 +45,7 @@ impl SplitsCompleted {
         self.bosses_defeated = 0x00;
         self.game_cleared = false;
         self.map_seen = [false; 17];
+        self.trinkets_seen = [false; 60];
     }
 }
 
@@ -93,11 +96,13 @@ async fn main() {
                 print_message("Process found.");
 
                 let mut splits_completed = SplitsCompleted::new();
+                let mut prev_timer_state = TimerState::NotRunning;
 
                 if let Some(offset_arrays) = get_offsets(&process, process_name) {
                     print_message("Starting Loop.");
                     loop {
                         settings.update();
+                        let current_timer_state = state();
 
                         // Game Timer
                         if let Ok(time) = process.read_pointer_path::<f64>(
@@ -116,7 +121,6 @@ async fn main() {
                             &offset_arrays.fPlayTimeCleared,
                         ) {
                             set_variable_float("fPlayTimeCleared", time);
-
                         }
 
                         if let Ok(time) = process.read_pointer_path::<f64>(
@@ -174,6 +178,18 @@ async fn main() {
                             "map_seen_count",
                             mapSeen_bytes.iter().filter(|&&b| b != 0).count() as i32,
                         );
+
+                        let mut trinkets_bytes = [0u8; 60];
+                        for i in 0..60u64 {
+                            if let Ok(byte) = process.read_pointer_path::<u8>(
+                                offset_arrays.savemanager,
+                                Bit64,
+                                &[offset_arrays.trinkets[0], offset_arrays.trinkets[1] + i * 4],
+                            ) {
+                                trinkets_bytes[i as usize] = byte;
+                            }
+                        }
+
                         /*
                         if let Ok(state) = process.read_pointer_path::<u32>(
                             offset_arrays.savemanager,
@@ -189,6 +205,19 @@ async fn main() {
                             }
                         }
                         */
+
+                        // detect if the timer was started, to handle manual timer start as well
+                        if prev_timer_state == TimerState::NotRunning
+                            && matches!(
+                                current_timer_state,
+                                TimerState::Running | TimerState::Paused
+                            )
+                        {
+                            splits_completed.reset();
+                            pause_game_time();
+                        }
+                        prev_timer_state = current_timer_state;
+
                         match state() {
                             TimerState::NotRunning => {
                                 // start timer
@@ -433,7 +462,7 @@ async fn main() {
                                     splits_completed.bosses_defeated |= 0x040000;
                                     split();
                                 } else if settings.furgus_the_faithful_defeated
-                                    && (bossDefeated & 0x08000) != 0
+                                    && (bossDefeated & 0x080000) != 0
                                     && (splits_completed.bosses_defeated & 0x080000) == 0
                                 {
                                     splits_completed.bosses_defeated |= 0x080000;
@@ -492,7 +521,370 @@ async fn main() {
                                 {
                                     splits_completed.bosses_defeated |= 0x10000000;
                                     split();
-                                } 
+                                }
+
+                                // trinkets
+                                if settings.lace_glove
+                                    && trinkets_bytes[0] != 0
+                                    && !splits_completed.trinkets_seen[0]
+                                {
+                                    splits_completed.trinkets_seen[0] = true;
+                                    split();
+                                } else if settings.twill_weave
+                                    && trinkets_bytes[1] != 0
+                                    && !splits_completed.trinkets_seen[1]
+                                {
+                                    splits_completed.trinkets_seen[1] = true;
+                                    split();
+                                } else if settings.smelling_salts
+                                    && trinkets_bytes[2] != 0
+                                    && !splits_completed.trinkets_seen[2]
+                                {
+                                    splits_completed.trinkets_seen[2] = true;
+                                    split();
+                                } else if settings.brisk_brew
+                                    && trinkets_bytes[3] != 0
+                                    && !splits_completed.trinkets_seen[3]
+                                {
+                                    splits_completed.trinkets_seen[3] = true;
+                                    split();
+                                } else if settings.seismic_belt
+                                    && trinkets_bytes[4] != 0
+                                    && !splits_completed.trinkets_seen[4]
+                                {
+                                    splits_completed.trinkets_seen[4] = true;
+                                    split();
+                                } else if settings.plasma_funnel
+                                    && trinkets_bytes[5] != 0
+                                    && !splits_completed.trinkets_seen[5]
+                                {
+                                    splits_completed.trinkets_seen[5] = true;
+                                    split();
+                                } else if settings.deboning_wand
+                                    && trinkets_bytes[6] != 0
+                                    && !splits_completed.trinkets_seen[6]
+                                {
+                                    splits_completed.trinkets_seen[6] = true;
+                                    split();
+                                } else if settings.steady_soles
+                                    && trinkets_bytes[7] != 0
+                                    && !splits_completed.trinkets_seen[7]
+                                {
+                                    splits_completed.trinkets_seen[7] = true;
+                                    split();
+                                } else if settings.valor_medallion
+                                    && trinkets_bytes[8] != 0
+                                    && !splits_completed.trinkets_seen[8]
+                                {
+                                    splits_completed.trinkets_seen[8] = true;
+                                    split();
+                                } else if settings.bell_of_grace
+                                    && trinkets_bytes[9] != 0
+                                    && !splits_completed.trinkets_seen[9]
+                                {
+                                    splits_completed.trinkets_seen[9] = true;
+                                    split();
+                                } else if settings.willow_the_wisp
+                                    && trinkets_bytes[10] != 0
+                                    && !splits_completed.trinkets_seen[10]
+                                {
+                                    splits_completed.trinkets_seen[10] = true;
+                                    split();
+                                } else if settings.helio_the_wisp
+                                    && trinkets_bytes[11] != 0
+                                    && !splits_completed.trinkets_seen[11]
+                                {
+                                    splits_completed.trinkets_seen[11] = true;
+                                    split();
+                                } else if settings.keri_the_wisp
+                                    && trinkets_bytes[12] != 0
+                                    && !splits_completed.trinkets_seen[12]
+                                {
+                                    splits_completed.trinkets_seen[12] = true;
+                                    split();
+                                } else if settings.windfall_charm
+                                    && trinkets_bytes[13] != 0
+                                    && !splits_completed.trinkets_seen[13]
+                                {
+                                    splits_completed.trinkets_seen[13] = true;
+                                    split();
+                                } else if settings.chain_capacitor
+                                    && trinkets_bytes[14] != 0
+                                    && !splits_completed.trinkets_seen[14]
+                                {
+                                    splits_completed.trinkets_seen[14] = true;
+                                    split();
+                                } else if settings.spike_spurs
+                                    && trinkets_bytes[15] != 0
+                                    && !splits_completed.trinkets_seen[15]
+                                {
+                                    splits_completed.trinkets_seen[15] = true;
+                                    split();
+                                } else if settings.desperation_bonnet
+                                    && trinkets_bytes[16] != 0
+                                    && !splits_completed.trinkets_seen[16]
+                                {
+                                    splits_completed.trinkets_seen[16] = true;
+                                    split();
+                                } else if settings.stolenoid
+                                    && trinkets_bytes[17] != 0
+                                    && !splits_completed.trinkets_seen[17]
+                                {
+                                    splits_completed.trinkets_seen[17] = true;
+                                    split();
+                                } else if settings.fly_bait
+                                    && trinkets_bytes[18] != 0
+                                    && !splits_completed.trinkets_seen[18]
+                                {
+                                    splits_completed.trinkets_seen[18] = true;
+                                    split();
+                                } else if settings.proto_spark
+                                    && trinkets_bytes[19] != 0
+                                    && !splits_completed.trinkets_seen[19]
+                                {
+                                    splits_completed.trinkets_seen[19] = true;
+                                    split();
+                                } else if settings.primed_vial_pouch
+                                    && trinkets_bytes[20] != 0
+                                    && !splits_completed.trinkets_seen[20]
+                                {
+                                    splits_completed.trinkets_seen[20] = true;
+                                    split();
+                                } else if settings.flame_guard
+                                    && trinkets_bytes[21] != 0
+                                    && !splits_completed.trinkets_seen[21]
+                                {
+                                    splits_completed.trinkets_seen[21] = true;
+                                    split();
+                                } else if settings.spark_catcher
+                                    && trinkets_bytes[22] != 0
+                                    && !splits_completed.trinkets_seen[22]
+                                {
+                                    splits_completed.trinkets_seen[22] = true;
+                                    split();
+                                } else if settings.evasion_powder
+                                    && trinkets_bytes[23] != 0
+                                    && !splits_completed.trinkets_seen[23]
+                                {
+                                    splits_completed.trinkets_seen[23] = true;
+                                    split();
+                                } else if settings.vascular_syrup
+                                    && trinkets_bytes[24] != 0
+                                    && !splits_completed.trinkets_seen[24]
+                                {
+                                    splits_completed.trinkets_seen[24] = true;
+                                    split();
+                                } else if settings.pit_preserver
+                                    && trinkets_bytes[25] != 0
+                                    && !splits_completed.trinkets_seen[25]
+                                {
+                                    splits_completed.trinkets_seen[25] = true;
+                                    split();
+                                } else if settings.iron_lung
+                                    && trinkets_bytes[26] != 0
+                                    && !splits_completed.trinkets_seen[26]
+                                {
+                                    splits_completed.trinkets_seen[26] = true;
+                                    split();
+                                } else if settings.tumbling_tutu
+                                    && trinkets_bytes[27] != 0
+                                    && !splits_completed.trinkets_seen[27]
+                                {
+                                    splits_completed.trinkets_seen[27] = true;
+                                    split();
+                                } else if settings.plasma_jug
+                                    && trinkets_bytes[28] != 0
+                                    && !splits_completed.trinkets_seen[28]
+                                {
+                                    splits_completed.trinkets_seen[28] = true;
+                                    split();
+                                } else if settings.uranium_bracelet
+                                    && trinkets_bytes[29] != 0
+                                    && !splits_completed.trinkets_seen[29]
+                                {
+                                    splits_completed.trinkets_seen[29] = true;
+                                    split();
+                                } else if settings.bubble_ring
+                                    && trinkets_bytes[30] != 0
+                                    && !splits_completed.trinkets_seen[30]
+                                {
+                                    splits_completed.trinkets_seen[30] = true;
+                                    split();
+                                } else if settings.shock_flint
+                                    && trinkets_bytes[31] != 0
+                                    && !splits_completed.trinkets_seen[31]
+                                {
+                                    splits_completed.trinkets_seen[31] = true;
+                                    split();
+                                } else if settings.intravenous_vial
+                                    && trinkets_bytes[32] != 0
+                                    && !splits_completed.trinkets_seen[32]
+                                {
+                                    splits_completed.trinkets_seen[32] = true;
+                                    split();
+                                } else if settings.pneumatic_armlet
+                                    && trinkets_bytes[33] != 0
+                                    && !splits_completed.trinkets_seen[33]
+                                {
+                                    splits_completed.trinkets_seen[33] = true;
+                                    split();
+                                } else if settings.starving_beastium
+                                    && trinkets_bytes[34] != 0
+                                    && !splits_completed.trinkets_seen[34]
+                                {
+                                    splits_completed.trinkets_seen[34] = true;
+                                    split();
+                                } else if settings.draining_beastium
+                                    && trinkets_bytes[35] != 0
+                                    && !splits_completed.trinkets_seen[35]
+                                {
+                                    splits_completed.trinkets_seen[35] = true;
+                                    split();
+                                } else if settings.reckless_beastium
+                                    && trinkets_bytes[36] != 0
+                                    && !splits_completed.trinkets_seen[36]
+                                {
+                                    splits_completed.trinkets_seen[36] = true;
+                                    split();
+                                } else if settings.volatile_beastium
+                                    && trinkets_bytes[37] != 0
+                                    && !splits_completed.trinkets_seen[37]
+                                {
+                                    splits_completed.trinkets_seen[37] = true;
+                                    split();
+                                } else if settings.burning_beastium
+                                    && trinkets_bytes[38] != 0
+                                    && !splits_completed.trinkets_seen[38]
+                                {
+                                    splits_completed.trinkets_seen[38] = true;
+                                    split();
+                                } else if settings.warding_beastium
+                                    && trinkets_bytes[39] != 0
+                                    && !splits_completed.trinkets_seen[39]
+                                {
+                                    splits_completed.trinkets_seen[39] = true;
+                                    split();
+                                } else if settings.dummy_cache
+                                    && trinkets_bytes[40] != 0
+                                    && !splits_completed.trinkets_seen[40]
+                                {
+                                    splits_completed.trinkets_seen[40] = true;
+                                    split();
+                                } else if settings.blinking_glass
+                                    && trinkets_bytes[41] != 0
+                                    && !splits_completed.trinkets_seen[41]
+                                {
+                                    splits_completed.trinkets_seen[41] = true;
+                                    split();
+                                } else if settings.watchful_eye
+                                    && trinkets_bytes[42] != 0
+                                    && !splits_completed.trinkets_seen[42]
+                                {
+                                    splits_completed.trinkets_seen[42] = true;
+                                    split();
+                                } else if settings.bridge_weaver
+                                    && trinkets_bytes[43] != 0
+                                    && !splits_completed.trinkets_seen[43]
+                                {
+                                    splits_completed.trinkets_seen[43] = true;
+                                    split();
+                                } else if settings.vial_salvo
+                                    && trinkets_bytes[44] != 0
+                                    && !splits_completed.trinkets_seen[44]
+                                {
+                                    splits_completed.trinkets_seen[44] = true;
+                                    split();
+                                } else if settings.dodging_pendulum
+                                    && trinkets_bytes[45] != 0
+                                    && !splits_completed.trinkets_seen[45]
+                                {
+                                    splits_completed.trinkets_seen[45] = true;
+                                    split();
+                                } else if settings.spring_heels
+                                    && trinkets_bytes[46] != 0
+                                    && !splits_completed.trinkets_seen[46]
+                                {
+                                    splits_completed.trinkets_seen[46] = true;
+                                    split();
+                                } else if settings.wallowers_gauntlets
+                                    && trinkets_bytes[47] != 0
+                                    && !splits_completed.trinkets_seen[47]
+                                {
+                                    splits_completed.trinkets_seen[47] = true;
+                                    split();
+                                } else if settings.oozing_organ
+                                    && trinkets_bytes[48] != 0
+                                    && !splits_completed.trinkets_seen[48]
+                                {
+                                    splits_completed.trinkets_seen[48] = true;
+                                    split();
+                                } else if settings.voltaic_guard
+                                    && trinkets_bytes[49] != 0
+                                    && !splits_completed.trinkets_seen[49]
+                                {
+                                    splits_completed.trinkets_seen[49] = true;
+                                    split();
+                                } else if settings.repulsing_root
+                                    && trinkets_bytes[50] != 0
+                                    && !splits_completed.trinkets_seen[50]
+                                {
+                                    splits_completed.trinkets_seen[50] = true;
+                                    split();
+                                } else if settings.lightning_grip
+                                    && trinkets_bytes[51] != 0
+                                    && !splits_completed.trinkets_seen[51]
+                                {
+                                    splits_completed.trinkets_seen[51] = true;
+                                    split();
+                                } else if settings.dead_leaf
+                                    && trinkets_bytes[52] != 0
+                                    && !splits_completed.trinkets_seen[52]
+                                {
+                                    splits_completed.trinkets_seen[52] = true;
+                                    split();
+                                } else if settings.niter_belt
+                                    && trinkets_bytes[53] != 0
+                                    && !splits_completed.trinkets_seen[53]
+                                {
+                                    splits_completed.trinkets_seen[53] = true;
+                                    split();
+                                } else if settings.bellows_bustle
+                                    && trinkets_bytes[54] != 0
+                                    && !splits_completed.trinkets_seen[54]
+                                {
+                                    splits_completed.trinkets_seen[54] = true;
+                                    split();
+                                } else if settings.tunneling_codex
+                                    && trinkets_bytes[55] != 0
+                                    && !splits_completed.trinkets_seen[55]
+                                {
+                                    splits_completed.trinkets_seen[55] = true;
+                                    split();
+                                } else if settings.joule_syringe
+                                    && trinkets_bytes[56] != 0
+                                    && !splits_completed.trinkets_seen[56]
+                                {
+                                    splits_completed.trinkets_seen[56] = true;
+                                    split();
+                                } else if settings.polyp_lamp
+                                    && trinkets_bytes[57] != 0
+                                    && !splits_completed.trinkets_seen[57]
+                                {
+                                    splits_completed.trinkets_seen[57] = true;
+                                    split();
+                                } else if settings.thermal_pack
+                                    && trinkets_bytes[58] != 0
+                                    && !splits_completed.trinkets_seen[58]
+                                {
+                                    splits_completed.trinkets_seen[58] = true;
+                                    split();
+                                } else if settings.counter_vial
+                                    && trinkets_bytes[59] != 0
+                                    && !splits_completed.trinkets_seen[59]
+                                {
+                                    splits_completed.trinkets_seen[59] = true;
+                                    split();
+                                }
 
                                 // generators
                                 if settings.queensbury_crypt

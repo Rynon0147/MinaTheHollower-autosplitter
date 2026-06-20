@@ -20,12 +20,9 @@ pub fn get_offsets(process: &Process, process_name: &str) -> Option<Offsets> {
     const SAVEMANAGER_SIG: Signature<15> =
         Signature::new("53 41 56 45 4D 41 4E 41 47 45 52 48 45 52 45");
     let savemanger_address = SAVEMANAGER_SIG.scan_process_range(process, module_range)?;
-    if let Ok(bc) = process.read_pointer(
-                        savemanger_address.add(0x18),
-                        Bit64
-                    ) {
-                        set_variable("savemanger_address", format!("{:X}", bc.value()).as_str());
-                    }
+    if let Ok(bc) = process.read_pointer(savemanger_address.add(0x18), Bit64) {
+        set_variable("savemanger_address", format!("{:X}", bc.value()).as_str());
+    }
     Some(Offsets {
         savemanager: savemanger_address,
         fPlayTime: [0x18, 0x8],
@@ -35,7 +32,8 @@ pub fn get_offsets(process: &Process, process_name: &str) -> Option<Offsets> {
         sCheckpointGamestate: [0x1e8],
         bGameCleared: [0x18, 0xd30],
         mapSeen: [0x18, 0xd4d],
-        bossDefeated: [0x18, 0x280]
+        bossDefeated: [0x18, 0x280],
+        trinkets: [0x18, 0x470],
     })
 }
 
@@ -49,4 +47,5 @@ pub(crate) struct Offsets {
     pub sCheckpointGamestate: [u64; 1],
     pub mapSeen: [u64; 2],
     pub bossDefeated: [u64; 2],
+    pub trinkets: [u64; 2],
 }
