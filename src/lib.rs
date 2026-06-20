@@ -462,7 +462,7 @@ async fn main() {
                                     splits_completed.bosses_defeated |= 0x040000;
                                     split();
                                 } else if settings.furgus_the_faithful_defeated
-                                    && (bossDefeated & 0x08000) != 0
+                                    && (bossDefeated & 0x080000) != 0
                                     && (splits_completed.bosses_defeated & 0x080000) == 0
                                 {
                                     splits_completed.bosses_defeated |= 0x080000;
