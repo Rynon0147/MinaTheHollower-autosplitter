@@ -84,6 +84,12 @@ async fn main() {
         let mut watch_fPlayTime: Watcher<f64> = Watcher::new();
         watch_fPlayTime.update_infallible(-1.0f64);
 
+        let mut watch_roomLastPosx: Watcher<f32> = Watcher::new();
+        watch_roomLastPosx.update_infallible(0.0f32);
+
+        let mut watch_roomLastPosy: Watcher<f32> = Watcher::new();
+        watch_roomLastPosy.update_infallible(0.0f32);
+
         // state watch
         /*
         let mut watch_sCheckpointGamestate: Watcher<u32> = Watcher::new();
@@ -95,9 +101,11 @@ async fn main() {
                 print_message("Process found.");
 
                 let mut splits_completed = SplitsCompleted::new();
+                let mut room_timer_initialized = false;
+                let mut last_room_time = 0.0f64;
                 let mut prev_timer_state = TimerState::NotRunning;
-                let offset_arrays = retry(|| {get_offsets(&process, process_name)}).await;
-        
+                let offset_arrays = retry(|| get_offsets(&process, process_name)).await;
+
                 print_message("Starting Loop.");
                 loop {
                     settings.update();
@@ -129,6 +137,24 @@ async fn main() {
                     ) {
                         set_variable_float("fPlayTimeTotal", time);
                         //set_game_time(Duration::seconds_f64(time));
+                    }
+
+                    // last room positions
+                    if let Ok(roomLastPosx) = process.read_pointer_path::<f32>(
+                        offset_arrays.savemanager,
+                        Bit64,
+                        &offset_arrays.roomLastPosx,
+                    ) {
+                        watch_roomLastPosx.update_infallible(roomLastPosx);
+                        set_variable_float("roomLastPosx", roomLastPosx);
+                    }
+                    if let Ok(roomLastPosy) = process.read_pointer_path::<f32>(
+                        offset_arrays.savemanager,
+                        Bit64,
+                        &offset_arrays.roomLastPosy,
+                    ) {
+                        watch_roomLastPosy.update_infallible(roomLastPosy);
+                        set_variable_float("roomLastPosy", roomLastPosy);
                     }
 
                     // split logic variables
@@ -186,6 +212,39 @@ async fn main() {
                             &[offset_arrays.trinkets[0], offset_arrays.trinkets[1] + i * 4],
                         ) {
                             trinkets_bytes[i as usize] = byte;
+                        }
+                    }
+
+                    // other custom variables
+                    if let Ok(deaths) = process.read_pointer_path::<u8>(
+                        offset_arrays.savemanager,
+                        Bit64,
+                        &offset_arrays.sDeathCount,
+                    ) {
+                        set_variable_int("Death Count", deaths);
+                    }
+
+                    // room timer calculation
+                    if let Some(roomLastPosx) = &watch_roomLastPosx.pair {
+                        if let Some(roomLastPosy) = &watch_roomLastPosy.pair {
+                            if let Some(fPlayTime) = &watch_fPlayTime.pair {
+                                if fPlayTime.current == 0.0 {
+                                    room_timer_initialized = false;
+                                    set_variable("Room Time", format!("{:.2}", 0.00).as_str());
+                                } else if fPlayTime.current > 0.0 && !room_timer_initialized {
+                                    last_room_time = fPlayTime.current;
+                                    room_timer_initialized = true;
+                                    set_variable("Room Time", format!("{:.2}", 0.00).as_str());
+                                } else if fPlayTime.current > 0.0
+                                    && room_timer_initialized
+                                    && roomLastPosx.current != roomLastPosx.old
+                                    && roomLastPosy.current != roomLastPosy.old
+                                {
+                                    let time_diff = fPlayTime.current - last_room_time;
+                                    set_variable("Room Time", format!("{:.2}", time_diff).as_str());
+                                    last_room_time = fPlayTime.current;
+                                }
+                            }
                         }
                     }
 
@@ -936,7 +995,6 @@ async fn main() {
 
                     next_tick().await;
                 }
-                
             })
             .await;
     }
